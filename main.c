@@ -14,7 +14,7 @@ int beerLambertColorRender(void);
 int main(int argc, const char * argv[]) {
     
     basic();
-    beerLambertColorRender();
+//    beerLambertColorRender();
     
     printf("Hello, World!\n");
     return 0;

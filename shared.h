@@ -8,7 +8,7 @@
 #ifndef shared_h
 #define shared_h
 
-#include "../svpng.h"
+#include "svpng.inc"
 #include <math.h> // fabsf(), fminf(), fmaxf(), sinf(), cosf(), sqrt()
 #include <stdlib.h> // rand(), RAND_MAX
 

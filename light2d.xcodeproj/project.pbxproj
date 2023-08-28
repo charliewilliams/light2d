@@ -7,10 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		C04D4F4D2A9CB1C200C93B60 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = C04D4F4C2A9CB1C200C93B60 /* main.c */; };
 		C04D4F682A9CB25600C93B60 /* basic.c in Sources */ = {isa = PBXBuildFile; fileRef = C04D4F5D2A9CB25600C93B60 /* basic.c */; };
 		C04D4F732A9CB90900C93B60 /* svpng.inc in Sources */ = {isa = PBXBuildFile; fileRef = C04D4F702A9CB90900C93B60 /* svpng.inc */; };
-		C04D4F742A9CBA1300C93B60 /* beerlambert_color.c in Sources */ = {isa = PBXBuildFile; fileRef = C04D4F562A9CB25500C93B60 /* beerlambert_color.c */; };
+		C04D4F762A9CBD2000C93B60 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = C04D4F752A9CBD2000C93B60 /* main.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -27,7 +26,6 @@
 
 /* Begin PBXFileReference section */
 		C04D4F492A9CB1C200C93B60 /* light2d */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = light2d; sourceTree = BUILT_PRODUCTS_DIR; };
-		C04D4F4C2A9CB1C200C93B60 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		C04D4F532A9CB25500C93B60 /* heart.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = heart.c; sourceTree = SOURCE_ROOT; };
 		C04D4F542A9CB25500C93B60 /* m.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = m.c; sourceTree = SOURCE_ROOT; };
 		C04D4F552A9CB25500C93B60 /* m2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = m2.c; sourceTree = SOURCE_ROOT; };
@@ -39,7 +37,6 @@
 		C04D4F5B2A9CB25600C93B60 /* beerlambert.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = beerlambert.c; sourceTree = SOURCE_ROOT; };
 		C04D4F5C2A9CB25600C93B60 /* fresnel.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = fresnel.c; sourceTree = SOURCE_ROOT; };
 		C04D4F5D2A9CB25600C93B60 /* basic.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = basic.c; sourceTree = SOURCE_ROOT; };
-		C04D4F692A9CB48B00C93B60 /* shared.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = shared.h; sourceTree = "<group>"; };
 		C04D4F6A2A9CB90900C93B60 /* vector_refract.tex */ = {isa = PBXFileReference; lastKnownFileType = file; path = vector_refract.tex; sourceTree = SOURCE_ROOT; };
 		C04D4F6B2A9CB90900C93B60 /* linesegmentpointdistance.tex */ = {isa = PBXFileReference; lastKnownFileType = file; path = linesegmentpointdistance.tex; sourceTree = SOURCE_ROOT; };
 		C04D4F6C2A9CB90900C93B60 /* snellslaw.tex */ = {isa = PBXFileReference; lastKnownFileType = file; path = snellslaw.tex; sourceTree = SOURCE_ROOT; };
@@ -49,6 +46,8 @@
 		C04D4F702A9CB90900C93B60 /* svpng.inc */ = {isa = PBXFileReference; explicitFileType = sourcecode.c; fileEncoding = 4; path = svpng.inc; sourceTree = SOURCE_ROOT; };
 		C04D4F712A9CB90900C93B60 /* capsule.tex */ = {isa = PBXFileReference; lastKnownFileType = file; path = capsule.tex; sourceTree = SOURCE_ROOT; };
 		C04D4F722A9CB90900C93B60 /* box.tex */ = {isa = PBXFileReference; lastKnownFileType = file; path = box.tex; sourceTree = SOURCE_ROOT; };
+		C04D4F752A9CBD2000C93B60 /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = SOURCE_ROOT; };
+		C04D4F772A9CBD2600C93B60 /* shared.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = shared.h; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,8 +80,8 @@
 		C04D4F4B2A9CB1C200C93B60 /* light2d */ = {
 			isa = PBXGroup;
 			children = (
-				C04D4F4C2A9CB1C200C93B60 /* main.c */,
-				C04D4F692A9CB48B00C93B60 /* shared.h */,
+				C04D4F752A9CBD2000C93B60 /* main.c */,
+				C04D4F772A9CBD2600C93B60 /* shared.h */,
 				C04D4F5D2A9CB25600C93B60 /* basic.c */,
 				C04D4F562A9CB25500C93B60 /* beerlambert_color.c */,
 				C04D4F5B2A9CB25600C93B60 /* beerlambert.c */,
@@ -164,10 +163,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C04D4F762A9CBD2000C93B60 /* main.c in Sources */,
 				C04D4F682A9CB25600C93B60 /* basic.c in Sources */,
 				C04D4F732A9CB90900C93B60 /* svpng.inc in Sources */,
-				C04D4F4D2A9CB1C200C93B60 /* main.c in Sources */,
-				C04D4F742A9CBA1300C93B60 /* beerlambert_color.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

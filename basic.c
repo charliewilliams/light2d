@@ -47,7 +47,7 @@ int basic(void) {
         }
     }
     
-    FILE *file = fopen("basic.png", "wb");
+    FILE *file = fopen("basic-cw2.png", "wb");
     svpng(file, W, H, img, 0);
     return 0;
 }

@@ -16,12 +16,12 @@ typedef struct { float sd, emissive, reflectivity, eta; } Result;
 
 unsigned char img[W * H * 3];
 
-float circleSDF(float x, float y, float cx, float cy, float r) {
+static float circleSDF(float x, float y, float cx, float cy, float r) {
     float ux = x - cx, uy = y - cy;
     return sqrtf(ux * ux + uy * uy) - r;
 }
 
-float boxSDF(float x, float y, float cx, float cy, float theta, float sx, float sy) {
+static float boxSDF(float x, float y, float cx, float cy, float theta, float sx, float sy) {
     float costheta = cosf(theta), sintheta = sinf(theta);
     float dx = fabs((x - cx) * costheta + (y - cy) * sintheta) - sx;
     float dy = fabs((y - cy) * costheta - (x - cx) * sintheta) - sy;
@@ -29,7 +29,7 @@ float boxSDF(float x, float y, float cx, float cy, float theta, float sx, float 
     return fminf(fmaxf(dx, dy), 0.0f) + sqrtf(ax * ax + ay * ay);
 }
 
-float planeSDF(float x, float y, float px, float py, float nx, float ny) {
+static float planeSDF(float x, float y, float px, float py, float nx, float ny) {
     return (x - px) * nx + (y - py) * ny;
 }
 
@@ -126,7 +126,7 @@ float sample(float x, float y) {
     return sum / N;
 }
 
-int main() {
+int refractionRender(void) {
     float a = TWO_PI * 0.73f;
     printf("%f", trace(0.6f, 0.6f, cosf(a), sinf(a), 0));
     unsigned char* p = img;
@@ -134,4 +134,5 @@ int main() {
         for (int x = 0; x < W; x++, p += 3)
             p[0] = p[1] = p[2] = (int)(fminf(sample((float)x / W, (float)y / H) * 255.0f, 255.0f));
     svpng(fopen("refraction.png", "wb"), W, H, img, 0);
+    return 0;
 }

@@ -14,12 +14,12 @@ typedef struct { float sd, emissive; } Result;
 
 unsigned char img[W * H * 3];
 
-float circleSDF(float x, float y, float cx, float cy, float r) {
+static float circleSDF(float x, float y, float cx, float cy, float r) {
     float ux = x - cx, uy = y - cy;
     return sqrtf(ux * ux + uy * uy) - r;
 }
 
-float planeSDF(float x, float y, float px, float py, float nx, float ny) {
+static float planeSDF(float x, float y, float px, float py, float nx, float ny) {
     return (x - px) * nx + (y - py) * ny;
 }
 
@@ -34,7 +34,7 @@ float capsuleSDF(float x, float y, float ax, float ay, float bx, float by, float
     return segmentSDF(x, y, ax, ay, bx, by) - r;
 }
 
-float boxSDF(float x, float y, float cx, float cy, float theta, float sx, float sy) {
+static float boxSDF(float x, float y, float cx, float cy, float theta, float sx, float sy) {
     float costheta = cosf(theta), sintheta = sinf(theta);
     float dx = fabs((x - cx) * costheta + (y - cy) * sintheta) - sx;
     float dy = fabs((y - cy) * costheta - (x - cx) * sintheta) - sy;
@@ -94,10 +94,11 @@ float sample(float x, float y) {
     return sum / N;
 }
 
-int main() {
+int shapesRender(void) {
     unsigned char* p = img;
     for (int y = 0; y < H; y++)
         for (int x = 0; x < W; x++, p += 3)
             p[0] = p[1] = p[2] = (int)(fminf(sample((float)x / W, (float)y / H) * 255.0f, 255.0f));
     svpng(fopen("shapes.png", "wb"), W, H, img, 0);
+    return 0;
 }

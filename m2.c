@@ -16,7 +16,7 @@ typedef struct { float sd, emissive, reflectivity, eta; } Result;
 
 unsigned char img[W * H * 3];
 
-float circleSDF(float x, float y, float cx, float cy, float r) {
+static float circleSDF(float x, float y, float cx, float cy, float r) {
     float ux = x - cx, uy = y - cy;
     return sqrtf(ux * ux + uy * uy) - r;
 }
@@ -103,10 +103,11 @@ float sample(float x, float y) {
     return sum / N;
 }
 
-int main() {
+int m2Render(void) {
     unsigned char* p = img;
     for (int y = 0; y < H; y++)
         for (int x = 0; x < W; x++, p += 3)
             p[0] = p[1] = p[2] = (int)(fminf(sample((float)x / W, (float)y / H) * 255.0f, 255.0f));
     svpng(fopen("m2.png", "wb"), W, H, img, 0);
+    return 0;
 }

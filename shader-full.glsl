@@ -17,6 +17,8 @@ uniform bool ub_jitter;
 #define BASIC_LIGHT 1.f;
 #define BLACK vec3(0)
 
+#define MAX_STEP 64
+
 struct Result { 
 	float sd;
 	float reflectivity;
@@ -87,8 +89,12 @@ vec3 trace(float ox, float oy, float dx, float dy, int depth) {
 	float sign = texelFetch(MASK, ivec2(ox, oy), 0).r > 0.0f ? 1.0f : -1.0f;
 
     for (int i = 0; i < MAX_STEP && t < MAX_DISTANCE; i++) {
+
         float x = ox + dx * t, y = oy + dy * t;
+
         Result r = scene(x, y);
+		
+
         if (r.sd * sign < EPSILON) {
             vec3 sum = r.emissive;
             if (depth < MAX_DEPTH && r.eta > 0.0f) {

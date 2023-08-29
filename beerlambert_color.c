@@ -7,9 +7,29 @@
 
 unsigned char img[W * H * 3];
 
+typedef struct { float r, g, b; } Color;
+typedef struct { float sd, reflectivity, eta; Color emissive, absorption; } Result;
+
 Result scene(float x, float y) {
-    Result a = { circleSDF(x, y, 0.5f, -0.2f, 0.1f), 0.0f, 0.0f, { 10.0f, 10.0f, 10.0f }, BLACK };
-    Result b = {   ngonSDF(x, y, 0.5f, 0.5f, 0.25f, 5.0f), 0.0f, 1.5f, BLACK, { 4.0f, 4.0f, 1.0f} };
+    
+    /// Bright emissive circle above the centre of the image
+    Result a = {
+        circleSDF(x, y, 0.5f, -0.2f, 0.1f), // sd
+        0.0f, // reflectivity
+        0.0f, // eta
+        { 10.0f, 10.0f, 10.0f }, // emissive
+        BLACK // absorption
+    };
+    
+    /// Transparent, non-reflective n-gon in the middle of the screen
+    Result b = {
+        ngonSDF(x, y, 0.5f, 0.5f, 0.25f, 5.0f),
+        0.0f,
+        1.5f,
+        BLACK,
+        { 4.0f, 4.0f, 1.0f}
+    };
+    
     return unionOp(a, b);
 }
 

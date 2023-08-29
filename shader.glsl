@@ -9,12 +9,7 @@ uniform bool ub_jitter;
 #define NOISE sTD2DInputs[1]
 #define RES uTD2DInfos[0].res.zw
 #define TWO_PI 6.28318530718f
-// #define W 512
-// #define H 512
-#define EPSILON 1.0f //1e-6f
-// #define BIAS 1e-4f
-// #define MAX_DEPTH 5
-// #define BLACK { 0.0f, 0.0f, 0.0f }
+#define EPSILON 1e-6f
 
 #define N u_samples
 #define STEPS 10
@@ -33,6 +28,12 @@ float trace(float ox, float oy, float dx, float dy) {
 		// Calculate distance to a shape by reading our SDF input
 		float xpos = ox + dx * t;
 		float ypos = oy + dy * t;
+
+		// If we don't check this the sides have a weird glow
+		// which tbh looks nice
+		if (xpos < 0 || ypos < 0 || xpos > RES.x || ypos > RES.y) {
+			return 0.0f;
+		}
 
 		float sd = texelFetch(MASK, ivec2(xpos, ypos), 0).r;
 

@@ -1,4 +1,4 @@
-﻿
+
 // Example Pixel Shader
 
 uniform float u_time;
@@ -13,9 +13,8 @@ uniform bool ub_jitter;
 
 #define N u_samples
 #define STEPS 10
-#define MAX_DISTANCE 200.0f
 #define BASIC_LIGHT 1.f;
-// #define MAX_DISTANCE (max(RES.x, RES.y) * 1.5)
+#define MAX_DISTANCE (max(RES.x, RES.y) * 1.5)
 
 /// origin xy, direction xy
 /// I think this needs to be in screen pixel coords

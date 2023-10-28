@@ -15,7 +15,8 @@ uniform bool ub_jitter;
 
 #define N u_samples
 #define STEPS 10
-#define MAX_DISTANCE 200.0f
+// #define MAX_DISTANCE 200
+#define MAX_DISTANCE (max(RES.x, RES.y) * 1.5)
 #define BASIC_LIGHT 1.0f
 #define MAX_STEP 64
 

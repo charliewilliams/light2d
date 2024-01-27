@@ -116,7 +116,8 @@ float trace(float ox, float oy, float dx, float dy) {
 }
 
 /// Figure out the colour for this pixel in... 0-1 normalised position?
-float render() {
+/// conversion of the function 'sample' in the original code
+float sampleXY() {
 
     float sum = 0.0f;
 
@@ -129,10 +130,14 @@ float render() {
 		For 0 to N, we get a random direction and trace out along that direction
 		*/
 
+		/// read noise from the texture in our coord
 		float rand = texelFetch(NOISE, ivec2(x, y), 0).r;
 
+		/// make a random direction from it
 		float a = ub_jitter ? TWO_PI * (i + rand) / N : TWO_PI * i / N;
-        sum += trace(x, y, cos(a), sin(a));
+        
+		/// call the trace function using OUR OWN COORD
+		sum += trace(x, y, cos(a), sin(a));
     }
     return sum / N;
 }
@@ -145,7 +150,7 @@ void main() {
 	// float val = sampleXY(pos.x, pos.y);
 
 	/// Normalised 0-1 position of this pixel
-	float val = render();
+	float val = sampleXY();
 
 	// float val = sampleXY(gl_FragCoord.x, gl_FragCoord.y);
 	

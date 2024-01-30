@@ -1,6 +1,4 @@
 
-// Example Pixel Shader
-
 uniform float u_time;
 uniform int u_samples;
 uniform bool ub_jitter;
@@ -18,6 +16,8 @@ uniform bool ub_jitter;
 #define BLACK vec3(0)
 
 #define MAX_STEP 64
+#define MAX_DEPTH 5
+#define BIAS 1e-4f
 
 struct Result { 
 	float sd;
@@ -28,13 +28,61 @@ struct Result {
 };
 
 struct Refraction {
-	int result; // did it refract out?
+	bool result; // did it refract out?
 	vec2 xy;
 };
 
 Result unionOp(Result a, Result b) {
     return a.sd < b.sd ? a : b;
 }
+
+vec3 colorScale(vec3 a, float s) {
+    return a * s;
+}
+
+/// SDF in this shader for debugging
+float circleSDF(float x, float y, float cx, float cy, float r) {
+
+    float ux = x - cx;
+    float uy = y - cy;
+
+    return sqrt(ux * ux + uy * uy) - r;
+}
+
+float planeSDF(float x, float y, float px, float py, float nx, float ny) {
+    return (x - px) * nx + (y - py) * ny;
+}
+
+float ngonSDF(float x, float y, float cx, float cy, float r, float n) {
+
+    float ux = x - cx, uy = y - cy, a = TWO_PI / n;
+    float t = mod(atan(uy, ux) + TWO_PI, a);
+    float s = sqrt(ux * ux + uy * uy);
+
+    return planeSDF(s * cos(t), s * sin(t), r, 0, cos(a * 0.5), sin(a * 0.5));
+}
+
+Result scene(float x, float y) {
+
+    Result a = {
+        circleSDF(x, y, 0.5, -0.2, 0.1),
+        0,
+        0,
+        vec3(10),
+        vec3(0)
+    };
+
+    Result b = {
+        ngonSDF(x, y, 0.5, 0.5, 0.25, 5),
+        0,
+        1.5,
+        vec3(0),
+        vec3(4, 4, 1)
+    };
+
+    return unionOp(a, b);
+}
+///
 
 vec2 reflect(float ix, float iy, float nx, float ny) {
     float idotn2 = (ix * nx + iy * ny) * 2.0f;
@@ -46,12 +94,12 @@ Refraction refract(float ix, float iy, float nx, float ny, float eta) {
     float idotn = ix * nx + iy * ny;
     float k = 1.0f - eta * eta * (1.0f - idotn * idotn);
     if (k < 0.0f) {
-        return Refraction(0, vec2(0)); // Total internal reflection
+        return Refraction(false, vec2(0)); // Total internal reflection
 	}
     float a = eta * idotn + sqrt(k);
     float rx = eta * ix - a * nx;
     float ry = eta * iy - a * ny;
-    return Refraction(1, vec2(rx, ry));
+    return Refraction(true, vec2(rx, ry));
 }
 
 float fresnel(float cosi, float cost, float etai, float etat) {
@@ -68,17 +116,25 @@ float beerLambertF(float a, float d) {
     return exp(-a * d);
 }
 
+// vec2 gradient(float x, float y) {
+
+// 	float xp = texelFetch(MASK, ivec2(x + EPSILON, y), 0).r;
+// 	float xm = texelFetch(MASK, ivec2(x - EPSILON, y), 0).r;
+// 	float nx = (xp - xm) * (0.5f / EPSILON);
+
+// 	float yp = texelFetch(MASK, ivec2(x, y + EPSILON), 0).r;
+// 	float ym = texelFetch(MASK, ivec2(x, y - EPSILON), 0).r;
+// 	float ny = (yp - ym) * (0.5f / EPSILON);
+
+// 	return vec2(nx, ny);
+// }
+
 vec2 gradient(float x, float y) {
 
-	float xp = texelFetch(MASK, ivec2(x + EPSILON, y), 0).r;
-	float xm = texelFetch(MASK, ivec2(x - EPSILON, y), 0).r;
-	float nx = (xp - xm) * (0.5f / EPSILON);
+    float nx = (scene(x + EPSILON, y).sd - scene(x - EPSILON, y).sd) * (0.5 / EPSILON);
+    float ny = (scene(x, y + EPSILON).sd - scene(x, y - EPSILON).sd) * (0.5 / EPSILON);
 
-	float yp = texelFetch(MASK, ivec2(x, y + EPSILON), 0).r;
-	float ym = texelFetch(MASK, ivec2(x, y - EPSILON), 0).r;
-	float ny = (yp - ym) * (0.5f / EPSILON);
-
-	return vec2(nx, ny);
+    return vec2(nx, ny);
 }
 
 // ox oy in screen pixel coords
@@ -86,7 +142,8 @@ vec3 trace(float ox, float oy, float dx, float dy, int depth) {
 
     float t = 1e-3f;
 
-	float sign = texelFetch(MASK, ivec2(ox, oy), 0).r > 0.0f ? 1.0f : -1.0f;
+	// float sign = texelFetch(MASK, ivec2(ox, oy), 0).r > 0.0f ? 1.0f : -1.0f;
+    float sign = scene(ox, oy).sd > 0 ? 1 : -1;
 
     for (int i = 0; i < MAX_STEP && t < MAX_DISTANCE; i++) {
 
@@ -94,32 +151,47 @@ vec3 trace(float ox, float oy, float dx, float dy, int depth) {
 
         Result r = scene(x, y);
 		
-
         if (r.sd * sign < EPSILON) {
+
             vec3 sum = r.emissive;
+
             if (depth < MAX_DEPTH && r.eta > 0.0f) {
-                float nx, ny, rx, ry, refl = r.reflectivity;
-                gradient(x, y, &nx, &ny);
+
+                float rx, ry, refl = r.reflectivity;
+                vec2 nxy = gradient(x, y);
+                float nx = nxy.x;
+                float ny = nxy.y;
                 float s = 1.0f / (nx * nx + ny * ny);
                 nx *= sign * s;
                 ny *= sign * s;
+
                 if (r.eta > 0.0f) {
-                    if (refract(dx, dy, nx, ny, sign < 0.0f ? r.eta : 1.0f / r.eta, &rx, &ry)) {
+
+                    Refraction rxy = refract(dx, dy, nx, ny, sign < 0.0f ? r.eta : 1.0f / r.eta);
+
+                    if (rxy.result) {
+
+                        rx = rxy.xy.x;
+                        ry = rxy.xy.y;
+
                         float cosi = -(dx * nx + dy * ny);
                         float cost = -(rx * nx + ry * ny);
                         refl = sign < 0.0f ? fresnel(cosi, cost, r.eta, 1.0f) : fresnel(cosi, cost, 1.0f, r.eta);
-                        refl = fmaxf(fminf(refl, 1.0f), 0.0f);
-                        sum = colorAdd(sum, colorScale(trace(x - nx * BIAS, y - ny * BIAS, rx, ry, depth + 1), 1.0f - refl));
+                        refl = max(min(refl, 1.0f), 0.0f);
+                        sum += trace(x - nx * BIAS, y - ny * BIAS, rx, ry, depth + 1) * (1.0f - refl);
                     }
                     else
                         refl = 1.0f; // Total internal reflection
                 }
                 if (refl > 0.0f) {
-                    reflect(dx, dy, nx, ny, &rx, &ry);
-                    sum = colorAdd(sum, colorScale(trace(x + nx * BIAS, y + ny * BIAS, rx, ry, depth + 1), refl));
+
+                    vec2 rxy = reflect(dx, dy, nx, ny);
+                    rx = rxy.x;
+                    ry = rxy.y;
+                    sum += trace(x + nx * BIAS, y + ny * BIAS, rx, ry, depth + 1) * refl;
                 }
             }
-            return colorMultiply(sum, beerLambert(r.absorption, t));
+            return sum * beerLambert(r.absorption, t);
         }
         t += r.sd * sign;
     }
@@ -155,7 +227,7 @@ float trace(float ox, float oy, float dx, float dy) {
     return 0.0f;
 }
 
-/// Figure out the colour for this pixel in... 0-1 normalised position?
+/// Figure out the colour for this pixel in... screen coords
 float sampleXY() {
 
     float sum = 0.0f;

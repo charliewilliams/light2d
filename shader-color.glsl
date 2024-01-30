@@ -100,8 +100,8 @@ Result rayMarch(vec2 origin, vec2 direction) {
 		/// Are we in a shape? Break...
 		/// Otherwise internal points get infinite light
 		/// TODO handle transparent shapes
-		if (r.sd < EPSILON && r.emissive > 0) {
-			// result.color = vec4(1, 0, 0, 1);
+		if (r.sd < EPSILON) { // && r.emissive > 0) {
+			result.color = r.color;
 			return result;
 		}
 
@@ -131,11 +131,15 @@ Result sampleXY() {
 		float a = TWO_PI * (i + randNum) / N;
         
 		/// call the trace function using OUR OWN COORD
-		result.emissive += rayMarch(vec2(x, y), vec2(cos(a), sin(a))).emissive;
+		Result r = rayMarch(vec2(x, y), vec2(cos(a), sin(a)));
+		result.emissive += r.emissive / N;
+		result.color += r.color / N;
     }
 
 	// result.emissive /= N;
-	result.emissive /= 16;
+	// result.color /= N;
+	// result.emissive /= 16;
+	// result.color /= 16;
     return result;
 }
 
@@ -144,12 +148,14 @@ void main()
 	// debugOut = vec4(0);
 
 	result = sampleXY();
+
+	vec4 debug = vec4(vec3(result.color.rgb), 1);
+	debugOut = TDOutputSwizzle(debug);
 	
-	vec4 color = vec4(vec3(result.emissive), 1);
+	vec4 color = vec4(vec3(result.emissive * result.color.rgb), 1);
 	fragColor = TDOutputSwizzle(color);
 
 	// debugOut = texelFetch(noiseTexture, ivec2(gl_FragCoord.xy), 0);
-	vec4 debug = vec4(vec3(result.color.rgb), 1);
-	debugOut = TDOutputSwizzle(debug);
+
 	// debugOut = texelFetch(colorTexture, ivec2(gl_FragCoord.xy), 0);
 }

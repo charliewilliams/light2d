@@ -178,7 +178,9 @@ vec3 trace(float ox, float oy, float dx, float dy, int depth) {
                         float cost = -(rx * nx + ry * ny);
                         refl = sign < 0.0f ? fresnel(cosi, cost, r.eta, 1.0f) : fresnel(cosi, cost, 1.0f, r.eta);
                         refl = max(min(refl, 1.0f), 0.0f);
-                        sum += trace(x - nx * BIAS, y - ny * BIAS, rx, ry, depth + 1) * (1.0f - refl);
+
+                        //// ARGH GLSL can't do recursion!
+                        // sum += trace(x - nx * BIAS, y - ny * BIAS, rx, ry, depth + 1) * (1.0f - refl);
                     }
                     else
                         refl = 1.0f; // Total internal reflection
@@ -188,7 +190,7 @@ vec3 trace(float ox, float oy, float dx, float dy, int depth) {
                     vec2 rxy = reflect(dx, dy, nx, ny);
                     rx = rxy.x;
                     ry = rxy.y;
-                    sum += trace(x + nx * BIAS, y + ny * BIAS, rx, ry, depth + 1) * refl;
+                    // sum += trace(x + nx * BIAS, y + ny * BIAS, rx, ry, depth + 1) * refl;
                 }
             }
             return sum * beerLambert(r.absorption, t);
@@ -201,36 +203,36 @@ vec3 trace(float ox, float oy, float dx, float dy, int depth) {
 
 /// origin xy, direction xy
 /// I think this needs to be in screen pixel coords
-float trace(float ox, float oy, float dx, float dy) {
+// float trace(float ox, float oy, float dx, float dy) {
 
-    float t = 0.0f;
+//     float t = 0.0f;
 
-    for (int i = 0; i < STEPS && t < MAX_DISTANCE; i++) {
+//     for (int i = 0; i < STEPS && t < MAX_DISTANCE; i++) {
 
-		// Calculate distance to a shape by reading our SDF input
-		float xpos = ox + dx * t;
-		float ypos = oy + dy * t;
+// 		// Calculate distance to a shape by reading our SDF input
+// 		float xpos = ox + dx * t;
+// 		float ypos = oy + dy * t;
 
-		// If we don't check this the sides have a weird glow
-		// which tbh looks nice
-		if (xpos < 0 || ypos < 0 || xpos > RES.x || ypos > RES.y) {
-			return 0.0f;
-		}
+// 		// If we don't check this the sides have a weird glow
+// 		// which tbh looks nice
+// 		if (xpos < 0 || ypos < 0 || xpos > RES.x || ypos > RES.y) {
+// 			return 0.0f;
+// 		}
 
-		float sd = texelFetch(MASK, ivec2(xpos, ypos), 0).r;
+// 		float sd = texelFetch(MASK, ivec2(xpos, ypos), 0).r;
 
-        if (sd < EPSILON) {
-            return BASIC_LIGHT;
-		}
-        t += sd;
-	}
-    return 0.0f;
-}
+//         if (sd < EPSILON) {
+//             return BASIC_LIGHT;
+// 		}
+//         t += sd;
+// 	}
+//     return 0.0f;
+// }
 
 /// Figure out the colour for this pixel in... screen coords
-float sampleXY() {
+vec3 sampleXY() {
 
-    float sum = 0.0f;
+    vec3 sum = vec3(0);
 
 	float x = gl_FragCoord.x;
 	float y = gl_FragCoord.y;
@@ -244,8 +246,9 @@ float sampleXY() {
 		float rand = texelFetch(NOISE, ivec2(x, y), 0).r;
 
 		float a = ub_jitter ? TWO_PI * (i + rand) / N : TWO_PI * i / N;
-        sum += trace(x, y, cos(a), sin(a));
+        sum += trace(x, y, cos(a), sin(a), 0);
     }
+    // return sum;
     return sum / N;
 }
 
@@ -253,14 +256,10 @@ out vec4 fragColor;
 void main() {
 
 	// vec2 pos = gl_FragCoord.xy / uTD2DInfos[0].res.zw;
-
-	// float val = sampleXY(pos.x, pos.y);
-
-	/// Normalised 0-1 position of this pixel
-	float val = sampleXY();
+	vec3 col = sampleXY();
 
 	// float val = sampleXY(gl_FragCoord.x, gl_FragCoord.y);
 	
-	vec4 color = vec4(vec3(val), 1);
+	vec4 color = vec4(col, 1);
 	fragColor = TDOutputSwizzle(color);
 }
